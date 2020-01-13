@@ -13,6 +13,9 @@ import java.io.*;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.stream.Stream;
@@ -24,6 +27,8 @@ import static org.apache.poi.ss.usermodel.CellType.*;
  */
 public class App {
     public static void main(String[] args) throws IOException {
+
+
         Properties prop = new Properties();
         try {
             prop.load(new BufferedReader(new FileReader("D:/exceltools.properties")));
@@ -44,7 +49,17 @@ public class App {
 
        String type=  prop.getProperty("type");
        if("unionfile".equals(type)){
-         String filenames = prop.getProperty("filenames");
+         String filenames = prop.getProperty("filedirectory");
+           System.out.println(filenames);
+
+           String fileName = filenames+"//workbook."+suffix;
+           Path p = Paths.get(fileName);
+           System.out.println(p);
+           if(Files.exists(p)){
+               System.out.println("存在");
+               Files.delete(p);
+           }
+
        //  String[] filenameArray = filenames.split(",");
         Sheet newSheet =  newWB.createSheet();
 
@@ -57,7 +72,7 @@ public class App {
              try (InputStream inp = new FileInputStream(filename)) {
                  Workbook wbtemp= null;
                  if("xlsx".equals(suffix)){
-                      wbtemp = new XSSFWorkbook(inp);
+                     wbtemp = new XSSFWorkbook(inp);
                  }else{
                      wbtemp = new HSSFWorkbook(inp);
                  }
@@ -67,7 +82,6 @@ public class App {
 
                  for(Row row:sheettemp){
                      boolean hasvalue = false;
-                     System.out.println(addHeader+":"+row.getRowNum());
                      if(addHeader){
                          if(row.getRowNum()==0){
                              continue;
@@ -80,22 +94,20 @@ public class App {
                              continue;
                          }
                          Cell newCell = newRow.createCell(cellCount);
-         /*                CellReference cellRef = new CellReference(row.getRowNum(), oldCell.getColumnIndex());
-                         System.out.print(cellRef.formatAsString());
-                         System.out.print(" - ");*/
-                         // get the text that appears in the cell by getting the cell value and applying any data formats (Date, 0.00, 1.23e9, $1.23, etc)
                          String text = formatter.formatCellValue(oldCell);
                          if(!text.isEmpty()){
                              hasvalue=true;
                          }
-                         // Alternatively, get the value and format it yourself
                          switch (oldCell.getCellType()) {
                              case STRING:
                                  newCell.setCellValue (oldCell.getRichStringCellValue().getString());
                                  break;
                              case NUMERIC:
                                  if (DateUtil.isCellDateFormatted(oldCell)) {
-                                     newCell.setCellValue (oldCell.getDateCellValue());
+                                    Date a = oldCell.getDateCellValue();
+                                     SimpleDateFormat spf = new SimpleDateFormat("yyyy/MM/dd");
+                                      String dateString =spf.format(a);
+                                     newCell.setCellValue (dateString);
                                  } else {
                                      newCell.setCellValue (oldCell.getNumericCellValue());
                                  }
@@ -128,7 +140,8 @@ public class App {
              addHeader = true;
          }
 
-           try (OutputStream fileOut = new FileOutputStream("D:/workbook."+suffix)) {
+
+           try (OutputStream fileOut = new FileOutputStream(fileName)) {
                newWB.write(fileOut);
            }catch (Exception e){
 
