@@ -38,6 +38,9 @@ public class Main extends Application {
         radioButton2.setUserData(".xls");
         radioButton2.setToggleGroup(group);
 
+        CheckBox unionAllSheetCheckBox = new CheckBox("合并所有sheet");
+
+
         final Button doActionButton = new Button("合并");
 
         chooserButton.setOnAction(event -> {
@@ -59,10 +62,15 @@ public class Main extends Application {
                 alert.setHeaderText(null);
                 alert.setContentText("请选择需要合并的文件夹");
                 alert.showAndWait();
+                return;
             }
             String fileType =(String) group.getSelectedToggle().getUserData();
-            ExcelUtils.unionWorkBook(path,fileType);
-
+            ExcelUtils.unionWorkBook(path,fileType,unionAllSheetCheckBox.isSelected());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("提示信息");
+            alert.setHeaderText(null);
+            alert.setContentText("合并完成");
+            alert.showAndWait();
         });
 
 
@@ -77,7 +85,8 @@ public class Main extends Application {
         gridPane.add(chooserButton,3,0,1,1);
         gridPane.add(radioButton1,0,1,1,1);
         gridPane.add(radioButton2,1,1,1,1);
-        gridPane.add(doActionButton,0,2);
+        gridPane.add(unionAllSheetCheckBox,0,2,1,1);
+        gridPane.add(doActionButton,0,3);
         primaryStage.setTitle("小脑弟专用excel合并工具");
         primaryStage.setScene(new Scene(gridPane));
         primaryStage.setHeight(300);
